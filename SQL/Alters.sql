@@ -9,6 +9,7 @@ ALTER TABLE Manager ADD CONSTRAINT fk_manager_team FOREIGN KEY (team_id) REFEREN
 -- Player
 ALTER TABLE Player ADD CONSTRAINT fk_player_person FOREIGN KEY (person_id) REFERENCES Person(person_id);
 ALTER TABLE Player ADD CONSTRAINT fk_player_team FOREIGN KEY (team_id) REFERENCES Team(team_id);
+ALTER TABLE Player ADD CONSTRAINT unique_shirt_number UNIQUE (team_id, shirt_number);
 
 -- Sponsor
 ALTER TABLE Sponsor ADD CONSTRAINT fk_sponsor_team FOREIGN KEY (team_id) REFERENCES Team(team_id);
@@ -28,4 +29,7 @@ ALTER TABLE Result ADD CONSTRAINT fk_result_winner FOREIGN KEY (winner_id) REFER
 
 -- Standings
 ALTER TABLE Standings ADD CONSTRAINT fk_standings_team FOREIGN KEY (team_id) REFERENCES Team(team_id);
+
+-- Previous_Standings
+ALTER TABLE Previous_Standings ADD CONSTRAINT fk_previous_standings_team FOREIGN KEY (team_id) REFERENCES Team(team_id);
 

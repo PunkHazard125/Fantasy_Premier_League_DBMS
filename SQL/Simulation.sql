@@ -23,8 +23,6 @@ CREATE OR REPLACE PROCEDURE simulate_matches IS
 
 BEGIN
     
-    DBMS_RANDOM.INITIALIZE(TRUNC(DBMS_RANDOM.VALUE * 10000));
-    
     FOR current_match IN match_cursor LOOP
     
         v_match_id := current_match.match_id;
@@ -62,6 +60,49 @@ BEGIN
 END;
 /
 
+CREATE OR REPLACE PROCEDURE reset_league IS
+
+BEGIN
+
+    MERGE INTO Previous_Standings ps
+    USING Standings s
+    ON (ps.team_id = s.team_id)
+    WHEN MATCHED THEN
+      UPDATE SET
+        ps.played = s.played,
+        ps.points = s.points,
+        ps.wins = s.wins,
+        ps.draws = s.draws,
+        ps.losses = s.losses
+    WHEN NOT MATCHED THEN
+      INSERT (team_id, played, points, wins, draws, losses)
+      VALUES (s.team_id, s.played, s.points, s.wins, s.draws, s.losses);
+
+    UPDATE Result
+    SET
+        score_a = 0,
+        score_b = 0,
+        winner_id = NULL;
+        
+
+    UPDATE Standings
+    SET
+        played = 0,
+        points = 0,
+        wins = 0,
+        draws = 0,
+        losses = 0;
+    
+
+    UPDATE Team
+    SET
+        goals_scored = 0,
+        goals_conceded = 0;
+    
+    COMMIT;
+    
+END;
+/
 
 CREATE OR REPLACE TRIGGER update_standings
 AFTER INSERT OR UPDATE ON Result
@@ -105,38 +146,18 @@ BEGIN
 END;
 /
 
-CREATE OR REPLACE PROCEDURE reset_league IS
 
 BEGIN
 
-    UPDATE Result
-    SET
-        score_a = 0,
-        score_b = 0,
-        winner_id = NULL;
-        
-
-    UPDATE Standings
-    SET
-        played = 0,
-        points = 0,
-        wins = 0,
-        draws = 0,
-        losses = 0;
-    
-
-    UPDATE Team
-    SET
-        goals_scored = 0,
-        goals_conceded = 0;
-    
-    COMMIT;
-    
-END;
-/
-
-
-BEGIN
     simulate_matches;
+    
 END;
 /
+
+BEGIN
+
+    reset_league;
+    
+END;
+/
+
